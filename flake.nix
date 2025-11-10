@@ -1,5 +1,5 @@
 {
-  description = "My Awesome Desktop Shell";
+  description = "vo1ded-panel";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -17,7 +17,7 @@
   }: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
-    pname = "my-shell";
+    pname = "vo1ded-panel";
     entry = "app.ts";
 
     astalPackages = with ags.packages.${system}; [
