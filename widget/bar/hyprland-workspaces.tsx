@@ -3,6 +3,7 @@ import AstalApps from "gi://AstalApps?version=0.1";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
 import GLib from "gi://GLib?version=2.0";
 import { createBinding, For, With } from "gnim";
+import tryGrabSteamIcon from "../../utils/steam-icon-grabber";
 
 const PID_MIME_TYPE = "text/x-vo1ded-pid";
 
@@ -72,9 +73,7 @@ export default function HyprlandWorkspaces() {
               ></label>
               <For each={createBinding(workspace, "clients")}>
                 {(client: AstalHyprland.Client) => {
-                  let icon = (
-                    <image iconName={client.class}></image>
-                  ) as Gtk.Image;
+                  let icon: Gtk.Image | undefined;
                   for (const app of apps.list) {
                     if (
                       client.class &&
@@ -85,6 +84,21 @@ export default function HyprlandWorkspaces() {
                     ) {
                       icon = (
                         <image iconName={app.iconName}></image>
+                      ) as Gtk.Image;
+                    }
+                  }
+
+                  if (icon == undefined) {
+                    const steamIcon = tryGrabSteamIcon(
+                      client.pid,
+                      client.class,
+                    );
+
+                    if (steamIcon) {
+                      icon = (<image file={steamIcon}></image>) as Gtk.Image;
+                    } else {
+                      icon = (
+                        <image iconName={client.class}></image>
                       ) as Gtk.Image;
                     }
                   }

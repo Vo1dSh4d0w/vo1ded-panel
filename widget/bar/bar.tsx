@@ -7,7 +7,7 @@ import HyprlandWorkspaces from "./hyprland-workspaces";
 export default function Bar(gdkmonitor: Gdk.Monitor) {
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
 
-  return (
+  const window = (
     <window
       visible
       name="vo1ded-panel"
@@ -16,6 +16,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       anchor={TOP | LEFT | RIGHT}
       application={app}
+      focusable={false}
     >
       <centerbox cssName="centerbox">
         <box $type="center" hexpand halign={Gtk.Align.CENTER}>
@@ -27,5 +28,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
         </box>
       </centerbox>
     </window>
-  );
+  ) as Gtk.Window;
+
+  return window;
 }
