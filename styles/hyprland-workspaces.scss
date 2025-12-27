@@ -1,5 +1,9 @@
 @use "variables" as *;
 
+.workspace {
+  margin: 2px;
+}
+
 .workspace-active {
   background: $selbg-color;
   color: $base-color;
