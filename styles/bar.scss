@@ -1,0 +1,12 @@
+@use "variables" as *;
+
+window.bar {
+  background: transparent;
+  color: $fg-color;
+
+  > centerbox {
+    background: $bg-color;
+    border-radius: 0;
+    padding: 4px;
+  }
+}

@@ -1,0 +1,20 @@
+@use "variables" as *;
+
+button {
+  outline: none;
+  transition-duration: 200ms;
+  border-radius: 16px;
+}
+
+.transparent > button {
+  background: transparent;
+
+  &:checked {
+    background: $selbg-color;
+  }
+
+  &:hover {
+    background: $base-color;
+    opacity: 80%;
+  }
+}

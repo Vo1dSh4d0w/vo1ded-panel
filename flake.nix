@@ -1,5 +1,5 @@
 {
-  description = "My Awesome Desktop Shell";
+  description = "vo1ded-panel";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -17,34 +17,55 @@
   }: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
+    pname = "vo1ded-panel";
+    entry = "app.ts";
+
+    astalPackages = with ags.packages.${system}; [
+      io
+      astal4
+      hyprland
+      wireplumber
+      tray
+      apps
+    ];
+
+    extraPackages =
+      astalPackages
+      ++ [
+        pkgs.libsoup_3
+      ];
   in {
     packages.${system} = {
-      default = ags.lib.bundle {
-        inherit pkgs;
+      default = pkgs.stdenv.mkDerivation {
+        name = pname;
         src = ./.;
-        name = "vo1ded-panel";
-        entry = "app.ts";
 
-        extraPackages = [
-          ags.packages.${system}.tray
-          ags.packages.${system}.hyprland
-          ags.packages.${system}.wireplumber
+        nativeBuildInputs = with pkgs; [
+          wrapGAppsHook3
+          gobject-introspection
+          ags.packages.${system}.default
         ];
+
+        buildInputs = extraPackages ++ [pkgs.gjs];
+
+        installPhase = ''
+          runHook preInstall
+
+          mkdir -p $out/bin
+          mkdir -p $out/share
+          cp -r * $out/share
+          ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
+
+          runHook postInstall
+        '';
       };
     };
 
     devShells.${system} = {
       default = pkgs.mkShell {
         buildInputs = [
-          # includes astal3 astal4 astal-io by default
           (ags.packages.${system}.default.override {
-            extraPackages = [
-              ags.packages.${system}.tray
-              ags.packages.${system}.hyprland
-              ags.packages.${system}.wireplumber
-              ags.packages.${system}.astal3
-              # cherry pick packages
-            ];
+            inherit extraPackages;
           })
         ];
       };
