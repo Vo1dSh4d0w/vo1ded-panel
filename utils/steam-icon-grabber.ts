@@ -33,7 +33,7 @@ export default function tryGrabSteamIcon(
 
   const exe = GLib.file_read_link(`/proc/${pid}/exe`);
 
-  const home_path = GLib.getenv("HOME");
+  const home_path = GLib.get_home_dir();
   const libFoldersPath = `${home_path}/.local/share/Steam/config/libraryfolders.vdf`;
   const fileRead = GLib.file_get_contents(libFoldersPath);
   const fileContent = new TextDecoder().decode(fileRead[1]);
