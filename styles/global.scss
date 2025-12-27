@@ -6,6 +6,19 @@ button {
   border-radius: 16px;
 }
 
+.btn-transparent {
+  background: transparent;
+
+  &:checked {
+    background: $selbg-color;
+  }
+
+  &:hover {
+    background: $base-color;
+    opacity: 80%;
+  }
+}
+
 .transparent > button {
   background: transparent;
 

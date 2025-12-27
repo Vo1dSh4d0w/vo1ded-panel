@@ -1,17 +1,8 @@
-import { Gdk, Gtk } from "ags/gtk4";
+import { Gtk } from "ags/gtk4";
 import AstalApps from "gi://AstalApps?version=0.1";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
-import GLib from "gi://GLib?version=2.0";
-import {
-  Accessor,
-  createBinding,
-  createComputed,
-  createState,
-  For,
-  With,
-} from "ags";
+import { Accessor, createBinding, createComputed, For, With } from "ags";
 import tryGrabSteamIcon from "../../utils/steam-icon-grabber";
-import Astal from "gi://Astal?version=4.0";
 
 const hyprland = AstalHyprland.get_default();
 const apps = new AstalApps.Apps({

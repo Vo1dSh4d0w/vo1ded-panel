@@ -3,6 +3,7 @@ import { Astal, Gtk, Gdk } from "ags/gtk4";
 import Time from "./time";
 import Tray from "./tray";
 import HyprlandWorkspaces from "./hyprland-workspaces";
+import Wireplumber from "./wireplumber";
 
 export default function Bar(gdkmonitor: Gdk.Monitor) {
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
@@ -24,6 +25,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
         </box>
         <box $type="end" hexpand halign={Gtk.Align.END} spacing={8}>
           <Tray></Tray>
+          <Wireplumber></Wireplumber>
           <Time></Time>
         </box>
       </centerbox>
