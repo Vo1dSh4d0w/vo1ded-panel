@@ -1,3 +1,32 @@
+/**
+ * WARNING: VOODOO STEAM SHENANIGANS
+ *
+ * This file exists because Steam does not believe in things like
+ * "stable APIs", "simple metadata", or "making sense".
+ *
+ * What follows is a delicate archaeological dig through:
+ *  - window class guesses
+ *  - /proc spelunking
+ *  - demonic VDF parsing
+ *  - icon caches that may or may not exist today
+ *
+ * If this breaks:
+ *  - It is probably Steam’s fault.
+ *  - It is definitely not deterministic.
+ *  - Debugging it will make you question your life choices.
+ *
+ * If you are thinking “I’ll just clean this up real quick”:
+ *  - No you won’t.
+ *  - You will make it worse.
+ *  - Steam will change something tomorrow anyway.
+ *
+ * Touch this code only if:
+ *  - You enjoy pain
+ *  - You have accepted that the correct fix may be “it works on my machine”
+ *
+ * You have been warned. Proceed at your own risk.
+ */
+
 import GLib from "gi://GLib?version=2.0";
 
 function findSteamIcon(appId: string): string | undefined {

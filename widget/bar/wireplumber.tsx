@@ -12,7 +12,7 @@ const defaultMicrophoneId = createBinding(wireplumber.default_microphone, "id");
 const [menuExpanded, setMenuExpanded] = createState(false);
 
 type WireplumberEndpointProps = {
-  endpoint: AstalWp.Endpoint;
+  endpoint: AstalWp.Endpoint | AstalWp.Stream;
 };
 
 function WireplumberEndpoint({ endpoint }: WireplumberEndpointProps) {
@@ -129,6 +129,25 @@ function WireplumberPopover() {
               </For>
             </box>
           )}
+        </With>
+      </Astal.Bin>
+
+      <Astal.Bin>
+        <With value={menuExpanded}>
+          {(expanded) =>
+            expanded && (
+              <box orientation={Gtk.Orientation.VERTICAL}>
+                <Gtk.Separator></Gtk.Separator>
+                <For each={createBinding(audio, "streams")}>
+                  {(stream: AstalWp.Stream) => (
+                    <WireplumberEndpoint
+                      endpoint={stream}
+                    ></WireplumberEndpoint>
+                  )}
+                </For>
+              </box>
+            )
+          }
         </With>
       </Astal.Bin>
 
