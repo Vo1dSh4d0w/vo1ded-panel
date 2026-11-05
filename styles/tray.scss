@@ -1,0 +1,44 @@
+@use "variables" as *;
+
+.tray {
+  background-color: $base-color;
+  border-radius: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+
+  :first-child button {
+    --padding-left: 0;
+  }
+
+  :last-child button {
+    --padding-right: 0;
+  }
+
+  .tray-item {
+    button {
+      background: transparent;
+      padding: 0;
+      color: white;
+      transition-duration: 0;
+      padding-left: var(--padding-left, 6px);
+      padding-right: var(--padding-right, 6px);
+
+      &:hover {
+        image {
+          -gtk-icon-transform: scale(1.4);
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+      }
+
+      &:checked {
+        opacity: 60%;
+        image {
+          -gtk-icon-transform: scale(1.4);
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+      }
+    }
+  }
+}
