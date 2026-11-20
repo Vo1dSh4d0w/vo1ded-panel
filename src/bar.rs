@@ -22,6 +22,11 @@ pub fn bar(app: &gtk::Application, monitor: &gdk::Monitor) -> gtk::ApplicationWi
         window.set_anchor(edge, true);
     }
 
+    // Runs off the left screen edge, so only the right side is slanted.
+    let start = region(&widgets::media::media(), false, true);
+    start.set_hexpand(true);
+    start.set_halign(gtk::Align::Start);
+
     let center = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     center.append(&widgets::workspaces::workspaces());
     let center = region(&center, true, true);
@@ -42,6 +47,7 @@ pub fn bar(app: &gtk::Application, monitor: &gdk::Monitor) -> gtk::ApplicationWi
     let centerbox = gtk::glib::Object::builder::<gtk::CenterBox>()
         .property("css-name", "centerbox")
         .build();
+    centerbox.set_start_widget(Some(&start));
     centerbox.set_center_widget(Some(&center));
     centerbox.set_end_widget(Some(&end));
 
@@ -102,6 +108,11 @@ fn region(content: &impl IsA<gtk::Widget>, slant_left: bool, slant_right: bool) 
     overlay.add_overlay(content);
     // Size the region by its content rather than by the empty drawing area.
     overlay.set_measure_overlay(content, true);
+    // A region whose content hides itself (e.g. no media playing) disappears.
+    content
+        .bind_property("visible", &overlay, "visible")
+        .sync_create()
+        .build();
     overlay
 }
 

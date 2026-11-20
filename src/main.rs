@@ -14,6 +14,14 @@ const APP_ID: &str = "dev.vo1ded.panel";
 const STYLE: &str = include_str!(concat!(env!("OUT_DIR"), "/style.css"));
 
 fn main() -> glib::ExitCode {
+    // GTK's GPU renderers intermittently clip the tops of glyphs in labels
+    // (seen with GTK 4.22). The bar is cheap to draw, so default to the
+    // software renderer; setting `GSK_RENDERER` explicitly still overrides it.
+    if std::env::var_os("GSK_RENDERER").is_none() {
+        // SAFETY: nothing else is running yet; no threads have been spawned.
+        unsafe { std::env::set_var("GSK_RENDERER", "cairo") };
+    }
+
     gio::resources_register_include!("resources.gresource").expect("failed to register resources");
 
     let app = gtk::Application::new(Some(APP_ID), gio::ApplicationFlags::default());
