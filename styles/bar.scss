@@ -5,8 +5,16 @@ window.bar {
   color: $fg-color;
 
   > centerbox {
-    background: $bg-color;
-    border-radius: 0;
-    padding: 4px;
+    background: transparent;
   }
+}
+
+// The trapezoid behind the center and right widget groups. It is drawn in
+// code with the CSS `color`, so this is the region's background color.
+.bar-region {
+  color: $bg-color;
+}
+
+.bar-region-content {
+  padding: 4px;
 }
