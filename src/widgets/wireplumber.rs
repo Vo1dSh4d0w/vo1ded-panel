@@ -19,14 +19,6 @@ fn expanded() -> Rc<Store<bool>> {
     EXPANDED.with(Rc::clone)
 }
 
-fn display_icon(icon: &str) -> &str {
-    if icon == "audio-volume-overamplified-symbolic" {
-        "audio-volume-high-symbolic"
-    } else {
-        icon
-    }
-}
-
 struct Row {
     root: gtk::Box,
     label: gtk::Label,
@@ -61,7 +53,7 @@ impl Row {
         scale.set_hexpand(true);
         scale.set_width_request(260);
         scale.add_mark(1.0, gtk::PositionType::Left, Some(""));
-        
+
         let muted = mute.clone();
         scale.connect_change_value(move |scale, _, value| {
             let value = value.clamp(0.0, MAX_VOLUME);
@@ -103,8 +95,7 @@ impl Row {
     fn update(&self, endpoint: &Endpoint, visible: bool) {
         self.root.set_visible(visible);
         self.label.set_label(&endpoint.description);
-        self.icon
-            .set_icon_name(Some(display_icon(endpoint.volume_icon())));
+        self.icon.set_icon_name(Some(endpoint.volume_icon()));
         // Avoid fighting the user while they drag the slider.
         if (self.scale.value() - endpoint.volume).abs() > 0.005 {
             self.scale.set_value(endpoint.volume);
@@ -216,8 +207,8 @@ pub fn wireplumber() -> gtk::Box {
         };
         let name = state
             .default_endpoint(Kind::Speaker)
-            .map_or("audio-volume-muted-symbolic", Endpoint::volume_icon);
-        icon.set_icon_name(Some(display_icon(name)));
+            .map_or(audio::ICON_SPEAKER_MUTED, Endpoint::volume_icon);
+        icon.set_icon_name(Some(name));
         true
     });
 

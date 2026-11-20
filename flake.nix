@@ -16,6 +16,7 @@
     nativeBuildInputs = with pkgs; [
       pkg-config
       dart-sass
+      glib # glib-compile-resources
       rustPlatform.bindgenHook
       wrapGAppsHook4
     ];

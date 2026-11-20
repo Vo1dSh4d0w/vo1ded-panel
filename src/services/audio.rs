@@ -46,6 +46,9 @@ impl Kind {
     }
 }
 
+pub const ICON_SPEAKER_MUTED: &str = "vo1ded-audio-volume-muted-symbolic";
+pub const ICON_MIC_MUTED: &str = "vo1ded-microphone-sensitivity-muted-symbolic";
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Endpoint {
     pub id: u32,
@@ -58,28 +61,32 @@ pub struct Endpoint {
 }
 
 impl Endpoint {
+    /// Name of the bundled icon (see `resources/icons`) for this endpoint's
+    /// level. Volumes above 100% use the "high" icon.
     pub fn volume_icon(&self) -> &'static str {
-        let level = if self.mute || self.volume <= 0.0 {
-            "muted"
+        let mic = self.kind == Kind::Microphone;
+        if self.mute || self.volume <= 0.0 {
+            if mic {
+                ICON_MIC_MUTED
+            } else {
+                ICON_SPEAKER_MUTED
+            }
         } else if self.volume <= 0.33 {
-            "low"
+            if mic {
+                "vo1ded-microphone-sensitivity-low-symbolic"
+            } else {
+                "vo1ded-audio-volume-low-symbolic"
+            }
         } else if self.volume <= 0.66 {
-            "medium"
-        } else if self.volume <= 1.0 || self.kind == Kind::Microphone {
-            "high"
+            if mic {
+                "vo1ded-microphone-sensitivity-medium-symbolic"
+            } else {
+                "vo1ded-audio-volume-medium-symbolic"
+            }
+        } else if mic {
+            "vo1ded-microphone-sensitivity-high-symbolic"
         } else {
-            "overamplified"
-        };
-        match (self.kind, level) {
-            (Kind::Microphone, "muted") => "microphone-sensitivity-muted-symbolic",
-            (Kind::Microphone, "low") => "microphone-sensitivity-low-symbolic",
-            (Kind::Microphone, "medium") => "microphone-sensitivity-medium-symbolic",
-            (Kind::Microphone, _) => "microphone-sensitivity-high-symbolic",
-            (_, "muted") => "audio-volume-muted-symbolic",
-            (_, "low") => "audio-volume-low-symbolic",
-            (_, "medium") => "audio-volume-medium-symbolic",
-            (_, "high") => "audio-volume-high-symbolic",
-            _ => "audio-volume-overamplified-symbolic",
+            "vo1ded-audio-volume-high-symbolic"
         }
     }
 }
@@ -349,7 +356,13 @@ fn on_device_route(inner: &Weak<RefCell<Inner>>, id: u32, pod: Option<&Pod>) {
     }
 }
 
-fn on_metadata(inner: &Weak<RefCell<Inner>>, key: Option<&str>, value: Option<&str>) {
+fn on_metadata(inner: &Weak<RefCell<Inner>>, subject: u32, key: Option<&str>, value: Option<&str>) {
+    // Defaults live on the core subject. Other subjects hold per-node entries
+    // (e.g. a stream's `target.object`); when such a node goes away its
+    // entries are cleared with a `None` key, which must not wipe the defaults.
+    if subject != pw::core::PW_ID_CORE {
+        return;
+    }
     let Some(inner) = inner.upgrade() else {
         return;
     };
@@ -459,8 +472,8 @@ fn add_metadata(
     let weak = Rc::downgrade(inner_rc);
     let listener = proxy
         .add_listener_local()
-        .property(move |_subject, key, _type, value| {
-            on_metadata(&weak, key, value);
+        .property(move |subject, key, _type, value| {
+            on_metadata(&weak, subject, key, value);
             0
         })
         .register();

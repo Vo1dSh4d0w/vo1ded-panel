@@ -14,6 +14,8 @@ const APP_ID: &str = "dev.vo1ded.panel";
 const STYLE: &str = include_str!(concat!(env!("OUT_DIR"), "/style.css"));
 
 fn main() -> glib::ExitCode {
+    gio::resources_register_include!("resources.gresource").expect("failed to register resources");
+
     let app = gtk::Application::new(Some(APP_ID), gio::ApplicationFlags::default());
     app.connect_activate(activate);
     app.run()
@@ -26,6 +28,10 @@ fn activate(app: &gtk::Application) {
     }
 
     let display = gdk::Display::default().expect("no display");
+
+    // Bundled icons are looked up as part of hicolor (after the user's theme),
+    // so they use `vo1ded-` prefixed names that no theme will shadow.
+    gtk::IconTheme::for_display(&display).add_resource_path("/dev/vo1ded/panel/icons");
 
     let provider = gtk::CssProvider::new();
     provider.load_from_string(STYLE);

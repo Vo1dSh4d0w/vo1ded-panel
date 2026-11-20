@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/dev/vo1ded/panel">
+    <file>icons/scalable/status/vo1ded-audio-volume-high-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-audio-volume-low-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-audio-volume-medium-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-audio-volume-muted-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-microphone-sensitivity-high-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-microphone-sensitivity-low-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-microphone-sensitivity-medium-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-microphone-sensitivity-muted-symbolic.svg</file>
+  </gresource>
+</gresources>

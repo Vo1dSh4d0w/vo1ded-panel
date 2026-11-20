@@ -12,4 +12,11 @@ fn main() {
         .status()
         .unwrap_or_else(|err| panic!("failed to run `sass` (dart-sass), is it installed? {err}"));
     assert!(status.success(), "sass failed to compile styles/style.scss");
+
+    // Bundled icons; also emits `rerun-if-changed` for every listed file.
+    glib_build_tools::compile_resources(
+        &["resources"],
+        "resources/resources.gresource.xml",
+        "resources.gresource",
+    );
 }
