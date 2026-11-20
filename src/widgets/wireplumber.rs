@@ -103,6 +103,12 @@ impl Row {
         self.percent
             .set_label(&format!("{:.0}%", endpoint.volume * 100.0));
         self.mute.set(endpoint.mute);
+        // Styled rather than made insensitive, so dragging still works.
+        if endpoint.mute {
+            self.scale.add_css_class("muted");
+        } else {
+            self.scale.remove_css_class("muted");
+        }
     }
 }
 
