@@ -23,11 +23,63 @@
   }
 }
 
-.wireplumber-endpoint-slider {
-  padding-bottom: 24px;
+// Mixer row outline (drawn in code, see `draw_row_outline`).
+.mixer-row-outline {
+  color: $selbg-color;
+}
 
-  &.muted trough {
+.mixer-mute {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+
+  &:hover > * {
+    opacity: 0.7;
+  }
+}
+
+.mixer-volume {
+  font-feature-settings: "tnum";
+}
+
+// Darkens the part of the volume fill above 100% (drawn over the fill in
+// code, see `draw_overamplified`). Raw GTK CSS, like the fill below.
+.mixer-overamplified {
+  color: #{"alpha(black, 0.35)"};
+}
+
+// Volume fill (drawn in code, see `draw_volume_fill`). Translucent so the
+// marker, drawn in the outline color, stands out. Raw GTK CSS: Sass's own
+// `alpha()` can't take GTK named colors.
+.mixer-volume-fill {
+  color: #{"alpha(@theme_selected_bg_color, 0.5)"};
+
+  &.muted {
     filter: grayscale(1);
     opacity: 0.5;
+  }
+}
+
+// Expand/collapse toggle: a chevron on a small hexagon (drawn in code, see
+// widgets/hexagon.rs); the button itself is transparent.
+.mixer-toggle-background {
+  color: $base-color;
+}
+
+.mixer-toggle {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2px 0;
+  min-width: 0;
+  min-height: 0;
+
+  &:hover > * {
+    opacity: 0.7;
   }
 }

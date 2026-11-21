@@ -12,7 +12,7 @@ pub const TIP: f64 = 14.0;
 const CONTENT_INSET: i32 = (TIP / 2.0) as i32 + 6;
 
 /// Uses `area`'s CSS `color` as the cairo source.
-fn set_source(cr: &gtk::cairo::Context, area: &gtk::DrawingArea) {
+pub fn set_source(cr: &gtk::cairo::Context, area: &gtk::DrawingArea) {
     let color = area.color();
     cr.set_source_rgba(
         color.red().into(),
@@ -55,7 +55,7 @@ pub fn hexagon(content: &impl IsA<gtk::Widget>, css_class: &str) -> gtk::Overlay
 }
 
 /// Line width of hexagon row outlines.
-const LINE_WIDTH: f64 = 1.0;
+pub const LINE_WIDTH: f64 = 1.0;
 /// Space between a row button's edge and its content: just enough to clear
 /// the chevron tip reaching into the button (half a tip plus half the line),
 /// plus a 1px gap.
