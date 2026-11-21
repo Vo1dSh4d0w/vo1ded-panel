@@ -6,7 +6,7 @@ use gtk::prelude::*;
 use gtk::{gio, glib};
 use regex::Regex;
 
-use crate::services::hyprland::{self, Client, State, Workspace};
+use crate::services::hyprland::{self, Client, State, Workspace, lua_string};
 use crate::steam_icon::try_grab_steam_icon;
 use crate::widgets::hexagon::hex_row;
 
@@ -120,11 +120,17 @@ fn workspace_button(workspace: &Workspace, state: &State) -> gtk::Button {
     });
 
     let dispatch = if workspace.special {
-        format!("togglespecialworkspace {}", special_name(workspace))
+        format!(
+            "hl.dsp.workspace.toggle_special({})",
+            lua_string(special_name(workspace))
+        )
     } else if let Some(id) = workspace.id {
-        format!("workspace {id}")
+        format!("hl.dsp.focus({{ workspace = {id} }})")
     } else {
-        format!("workspace name:{}", workspace.name)
+        format!(
+            "hl.dsp.focus({{ workspace = {} }})",
+            lua_string(&format!("name:{}", workspace.name))
+        )
     };
     button.connect_clicked(move |_| hyprland::get().dispatch(&dispatch));
 

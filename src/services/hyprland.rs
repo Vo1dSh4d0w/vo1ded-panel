@@ -246,9 +246,33 @@ impl Hyprland {
         this
     }
 
-    pub fn dispatch(&self, args: &str) {
-        if let Err(e) = request(&format!("dispatch {args}")) {
-            eprintln!("hyprland: dispatch {args}: {e}");
+    /// Runs a Lua dispatcher expression, e.g. `hl.dsp.focus({ workspace = 3 })`.
+    /// Hyprland evaluates it as `hl.dispatch(<dispatcher>)`.
+    pub fn dispatch(&self, dispatcher: &str) {
+        match request(&format!("dispatch {dispatcher}")) {
+            Ok(reply) if reply.trim() == "ok" => {}
+            // Lua errors come back as an `error: ...` reply, not an I/O error.
+            Ok(reply) => eprintln!("hyprland: dispatch {dispatcher}: {}", reply.trim()),
+            Err(e) => eprintln!("hyprland: dispatch {dispatcher}: {e}"),
         }
     }
+}
+
+/// Quotes `s` as a Lua string literal, for passing names to dispatchers.
+pub fn lua_string(s: &str) -> String {
+    let mut quoted = String::with_capacity(s.len() + 2);
+    quoted.push('"');
+    for c in s.chars() {
+        match c {
+            '"' | '\\' => {
+                quoted.push('\\');
+                quoted.push(c);
+            }
+            // Decimal escapes work in every Lua version, unlike `\u{..}`.
+            c if c.is_ascii_control() => quoted.push_str(&format!("\\{:03}", c as u32)),
+            c => quoted.push(c),
+        }
+    }
+    quoted.push('"');
+    quoted
 }
