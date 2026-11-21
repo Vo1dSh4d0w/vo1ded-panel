@@ -1,10 +1,32 @@
 @use "variables" as *;
 
+// The hexagon shapes are drawn in code (see `hex_row` in workspaces.rs);
+// the buttons themselves are invisible apart from their content.
 .workspace {
-  margin: 2px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  // Horizontal spacing comes from `CONTENT_INSET` in workspaces.rs.
+  padding: 2px 0;
+  min-width: 0;
+
+  &:hover > * {
+    opacity: 0.7;
+  }
 }
 
 .workspace-active {
-  background: $selbg-color;
   color: $base-color;
+}
+
+// Fill of the selected workspace's hexagon.
+.workspace-fill {
+  color: $selbg-color;
+}
+
+// Hexagon outlines, halfway between the text and background colors. Written
+// as raw GTK CSS: Sass's own `mix()` can't take GTK named colors.
+.workspace-outline {
+  color: $selbg-color;//#{"mix(@theme_fg_color, @theme_bg_color, 0.7)"};
 }
