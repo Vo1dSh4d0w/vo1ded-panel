@@ -46,7 +46,50 @@ impl Player {
         // Drop instance suffixes such as `firefox.instance_1_42`.
         name.split('.').next().unwrap_or(name)
     }
+
+    /// Whether this is a dedicated music player rather than, say, a browser
+    /// tab or video player.
+    pub fn is_music_player(&self) -> bool {
+        let name = self.short_name().to_lowercase();
+        MUSIC_PLAYERS.contains(&name.as_str())
+    }
 }
+
+/// Bus name suffixes (lowercased, without instance suffix) of well-known
+/// music players, preferred when choosing which player to show.
+const MUSIC_PLAYERS: &[&str] = &[
+    "amarok",
+    "amberol",
+    "audacious",
+    "cider",
+    "clementine",
+    "cmus",
+    "deadbeef",
+    "elisa",
+    "feishin",
+    "g4music",
+    "gapless",
+    "harmonoid",
+    "kew",
+    "lollypop",
+    "mopidy",
+    "mpd",
+    "musikcube",
+    "ncspot",
+    "plexamp",
+    "quodlibet",
+    "rhythmbox",
+    "spotify",
+    "spotify_player",
+    "spotifyd",
+    "strawberry",
+    "sublimemusic",
+    "supersonic",
+    "tauon",
+    "termusic",
+    "tidal-hifi",
+    "youtubemusic",
+];
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct State {
@@ -55,11 +98,15 @@ pub struct State {
 }
 
 impl State {
-    /// The player to show: the most recent one that is playing, otherwise the
-    /// most recent paused one. Stopped players are not shown.
+    /// The player to show. Playing beats paused; within the same status,
+    /// known music players beat others (e.g. a browser video), and then the
+    /// most recently started one wins. Stopped players are not shown.
     pub fn active(&self) -> Option<&Player> {
-        let with = |status| self.players.iter().find(|p| p.status == status);
-        with(Status::Playing).or_else(|| with(Status::Paused))
+        self.players
+            .iter()
+            .filter(|p| p.status != Status::Stopped)
+            // `min_by_key` keeps the first of equal keys, i.e. the most recent.
+            .min_by_key(|p| (p.status != Status::Playing, !p.is_music_player()))
     }
 }
 
@@ -305,5 +352,71 @@ fn read(name: &str, proxy: &gio::DBusProxy) -> Player {
         can_pause: flag("CanPause"),
         can_go_next: flag("CanGoNext"),
         can_go_previous: flag("CanGoPrevious"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn player(name: &str, status: Status) -> Player {
+        Player {
+            name: format!("{PREFIX}{name}"),
+            status,
+            title: String::new(),
+            artists: Vec::new(),
+            art_url: None,
+            can_play: true,
+            can_pause: true,
+            can_go_next: true,
+            can_go_previous: true,
+        }
+    }
+
+    fn active(players: Vec<Player>) -> Option<String> {
+        State { players }
+            .active()
+            .map(|p| p.short_name().to_owned())
+    }
+
+    #[test]
+    fn music_player_beats_more_recent_browser() {
+        let players = vec![
+            player("firefox.instance_1_49", Status::Playing),
+            player("spotify", Status::Playing),
+        ];
+        assert_eq!(active(players).as_deref(), Some("spotify"));
+    }
+
+    #[test]
+    fn playing_beats_paused_music_player() {
+        let players = vec![
+            player("spotify", Status::Paused),
+            player("firefox.instance_1_49", Status::Playing),
+        ];
+        assert_eq!(active(players).as_deref(), Some("firefox"));
+    }
+
+    #[test]
+    fn paused_music_player_beats_paused_browser() {
+        let players = vec![
+            player("firefox.instance_1_49", Status::Paused),
+            player("spotify", Status::Paused),
+        ];
+        assert_eq!(active(players).as_deref(), Some("spotify"));
+    }
+
+    #[test]
+    fn most_recent_wins_among_equals() {
+        let players = vec![
+            player("chromium", Status::Playing),
+            player("firefox", Status::Playing),
+        ];
+        assert_eq!(active(players).as_deref(), Some("chromium"));
+    }
+
+    #[test]
+    fn stopped_players_are_hidden() {
+        assert_eq!(active(vec![player("spotify", Status::Stopped)]), None);
     }
 }
