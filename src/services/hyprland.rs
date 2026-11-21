@@ -1,6 +1,7 @@
 //! Hyprland IPC: state is fetched over `.socket.sock` and refreshed whenever
 //! an event arrives on `.socket2.sock`.
 
+use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
@@ -31,20 +32,36 @@ pub struct Client {
     pub pid: i32,
 }
 
+/// Workspaces shown on one monitor, as [`Workspace::key`]s.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Monitor {
+    pub active_workspace: Option<String>,
+    /// Special workspace open on the monitor, if any.
+    pub special_workspace: Option<String>,
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct State {
     /// Special workspaces first, then regular ones by id.
     pub workspaces: Vec<Workspace>,
     pub clients: Vec<Client>,
-    pub focused_workspace: Option<String>,
-    /// Special workspace shown on the focused monitor, if any.
-    pub special_workspace: Option<String>,
+    /// Keyed by connector name, e.g. `DP-1`.
+    pub monitors: BTreeMap<String, Monitor>,
+    pub focused_monitor: Option<String>,
 }
 
 impl State {
-    pub fn is_active(&self, key: &str) -> bool {
-        self.focused_workspace.as_deref() == Some(key)
-            || self.special_workspace.as_deref() == Some(key)
+    /// Whether the workspace is shown on `monitor` (as its active workspace
+    /// or open special workspace). Unknown or missing monitors fall back to
+    /// the focused one.
+    pub fn is_active(&self, key: &str, monitor: Option<&str>) -> bool {
+        let monitor = monitor
+            .and_then(|m| self.monitors.get(m))
+            .or_else(|| self.monitors.get(self.focused_monitor.as_deref()?));
+        monitor.is_some_and(|m| {
+            m.active_workspace.as_deref() == Some(key)
+                || m.special_workspace.as_deref() == Some(key)
+        })
     }
 }
 
@@ -140,7 +157,10 @@ fn default_true() -> bool {
 
 #[derive(Deserialize)]
 struct MonitorJson {
+    name: String,
     focused: bool,
+    #[serde(rename = "activeWorkspace")]
+    active_workspace: Option<WorkspaceRef>,
     #[serde(rename = "specialWorkspace")]
     special_workspace: Option<WorkspaceRef>,
 }
@@ -150,15 +170,20 @@ fn fetch() -> Option<State> {
     workspaces
         .sort_by(|a, b| (!a.is_special(), a.id, &a.name).cmp(&(!b.is_special(), b.id, &b.name)));
     let clients: Vec<ClientJson> = request_json("clients")?;
-    let active: Option<WorkspaceRef> = request_json("activeworkspace");
     let monitors: Vec<MonitorJson> = request_json("monitors").unwrap_or_default();
 
-    let special_workspace = monitors
+    let focused_monitor = monitors.iter().find(|m| m.focused).map(|m| m.name.clone());
+    let key = |w: Option<WorkspaceRef>| w.filter(|w| !w.is_none()).map(|w| w.key());
+    let monitors = monitors
         .into_iter()
-        .find(|m| m.focused)
-        .and_then(|m| m.special_workspace)
-        .filter(|w| !w.is_none())
-        .map(|w| w.key());
+        .map(|m| {
+            let monitor = Monitor {
+                active_workspace: key(m.active_workspace),
+                special_workspace: key(m.special_workspace),
+            };
+            (m.name, monitor)
+        })
+        .collect();
 
     Some(State {
         workspaces: workspaces
@@ -180,8 +205,8 @@ fn fetch() -> Option<State> {
                 pid: c.pid,
             })
             .collect(),
-        focused_workspace: active.map(|w| w.key()),
-        special_workspace,
+        monitors,
+        focused_monitor,
     })
 }
 

@@ -28,7 +28,9 @@ pub fn bar(app: &gtk::Application, monitor: &gdk::Monitor) -> gtk::ApplicationWi
     start.set_halign(gtk::Align::Start);
 
     let center = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    center.append(&widgets::workspaces::workspaces());
+    center.append(&widgets::workspaces::workspaces(
+        monitor.connector().map(Into::into),
+    ));
     let center = region(&center, true, true);
     center.set_hexpand(true);
     center.set_halign(gtk::Align::Center);

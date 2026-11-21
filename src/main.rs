@@ -22,9 +22,11 @@ fn main() -> glib::ExitCode {
         unsafe { std::env::set_var("GSK_RENDERER", "cairo") };
     }
 
+    let app_id = std::env::var("VO1DED_APP_ID").unwrap_or(APP_ID.to_string());
+
     gio::resources_register_include!("resources.gresource").expect("failed to register resources");
 
-    let app = gtk::Application::new(Some(APP_ID), gio::ApplicationFlags::default());
+    let app = gtk::Application::new(Some(app_id), gio::ApplicationFlags::default());
     app.connect_activate(activate);
     app.run()
 }

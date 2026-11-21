@@ -98,7 +98,7 @@ fn workspace_label(workspace: &Workspace) -> String {
     }
 }
 
-fn workspace_button(workspace: &Workspace, state: &State) -> gtk::Button {
+fn workspace_button(workspace: &Workspace, state: &State, active: bool) -> gtk::Button {
     let content = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     content.append(&gtk::Label::new(Some(&workspace_label(workspace))));
     // Newest client first, matching the AGS version.
@@ -113,7 +113,7 @@ fn workspace_button(workspace: &Workspace, state: &State) -> gtk::Button {
 
     let button = gtk::Button::builder().child(&content).build();
     button.add_css_class("workspace");
-    button.add_css_class(if state.is_active(&workspace.key) {
+    button.add_css_class(if active {
         "workspace-active"
     } else {
         "workspace-inactive"
@@ -137,7 +137,9 @@ fn workspace_button(workspace: &Workspace, state: &State) -> gtk::Button {
     button
 }
 
-pub fn workspaces() -> gtk::Box {
+/// Workspaces, highlighting the ones shown on `monitor` (a connector name
+/// such as `DP-1`; the focused monitor if `None` or unknown to Hyprland).
+pub fn workspaces(monitor: Option<String>) -> gtk::Box {
     let container = gtk::Box::new(gtk::Orientation::Horizontal, 4);
 
     let weak: glib::WeakRef<gtk::Box> = container.downgrade();
@@ -148,19 +150,23 @@ pub fn workspaces() -> gtk::Box {
         while let Some(child) = container.first_child() {
             container.remove(&child);
         }
+        let is_active = |w: &Workspace| state.is_active(&w.key, monitor.as_deref());
 
         // Each special workspace is a standalone hexagon, left of the rest.
         for workspace in state.workspaces.iter().filter(|w| w.special) {
-            let button = workspace_button(workspace, state);
-            let active = state.is_active(&workspace.key);
+            let active = is_active(workspace);
+            let button = workspace_button(workspace, state, active);
             container.append(&hex_row(&[button], Some(0), active, "workspace"));
         }
 
         let regular: Vec<&Workspace> = state.workspaces.iter().filter(|w| !w.special).collect();
         if !regular.is_empty() {
-            let active = regular.iter().position(|w| state.is_active(&w.key));
-            let buttons: Vec<gtk::Button> =
-                regular.iter().map(|w| workspace_button(w, state)).collect();
+            let active = regular.iter().position(|w| is_active(w));
+            let buttons: Vec<gtk::Button> = regular
+                .iter()
+                .enumerate()
+                .map(|(i, w)| workspace_button(w, state, active == Some(i)))
+                .collect();
             container.append(&hex_row(&buttons, active, true, "workspace"));
         }
         true
