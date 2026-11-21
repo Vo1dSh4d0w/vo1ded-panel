@@ -51,6 +51,8 @@ fn activate(app: &gtk::Application) {
         gtk::STYLE_PROVIDER_PRIORITY_USER,
     );
 
+    widgets::notifications::init(app);
+
     // One bar per monitor, rebuilt when monitors are plugged or unplugged.
     let bars: Rc<RefCell<Vec<gtk::ApplicationWindow>>> = Rc::default();
     let rebuild = {
