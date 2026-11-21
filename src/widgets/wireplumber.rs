@@ -7,6 +7,7 @@ use gtk::prelude::*;
 
 use crate::services::audio::{self, Endpoint, Kind, State};
 use crate::store::Store;
+use crate::widgets::hexagon::hexagon;
 
 const MAX_VOLUME: f64 = 1.5;
 
@@ -204,7 +205,8 @@ fn popover_content() -> gtk::Box {
     content
 }
 
-pub fn wireplumber() -> gtk::Box {
+/// The mixer button, on a hexagonal background.
+pub fn wireplumber() -> gtk::Overlay {
     let icon = gtk::Image::new();
     let weak = icon.downgrade();
     audio::get().state.subscribe(move |state| {
@@ -222,10 +224,9 @@ pub fn wireplumber() -> gtk::Box {
     popover.set_child(Some(&popover_content()));
 
     let button = gtk::MenuButton::new();
+    button.add_css_class("wireplumber-button");
     button.set_child(Some(&icon));
     button.set_popover(Some(&popover));
 
-    let container = gtk::Box::new(gtk::Orientation::Horizontal, 0);
-    container.append(&button);
-    container
+    hexagon(&button, "wireplumber-background")
 }

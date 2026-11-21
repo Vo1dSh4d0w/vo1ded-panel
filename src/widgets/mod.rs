@@ -1,3 +1,4 @@
+pub mod hexagon;
 pub mod media;
 pub mod time;
 pub mod tray;

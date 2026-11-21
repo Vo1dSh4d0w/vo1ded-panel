@@ -1,10 +1,11 @@
 @use "variables" as *;
 
+// Fill of the hexagon behind the tray (drawn in code, see widgets/hexagon.rs).
+.tray-background {
+  color: $base-color;
+}
+
 .tray {
-  background-color: $base-color;
-  border-radius: 16px;
-  padding-left: 16px;
-  padding-right: 16px;
 
   :first-child button {
     --padding-left: 0;

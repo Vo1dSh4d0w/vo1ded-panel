@@ -1,3 +1,28 @@
+@use "variables" as *;
+
+// Fill of the hexagon behind the mixer button (drawn in code, see
+// widgets/hexagon.rs); the button itself is transparent.
+.wireplumber-background {
+  color: $base-color;
+}
+
+.wireplumber-button > button {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+
+  &:hover > *,
+  &:checked > * {
+    opacity: 0.7;
+  }
+
+  &:checked {
+      color: $selbg-color;
+  }
+}
+
 .wireplumber-endpoint-slider {
   padding-bottom: 24px;
 

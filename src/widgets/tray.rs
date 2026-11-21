@@ -9,6 +9,7 @@ use system_tray::item::{IconPixmap, StatusNotifierItem};
 use system_tray::menu::{MenuItem, MenuType, ToggleState, ToggleType};
 
 use crate::services::tray::{self, Command, Item};
+use crate::widgets::hexagon::hexagon;
 
 /// Data the click handler needs, refreshed on every item update.
 #[derive(Default)]
@@ -241,9 +242,11 @@ impl TrayButton {
     }
 }
 
-pub fn tray() -> gtk::Box {
+/// Tray items on a hexagonal background. Hidden while there are no items.
+pub fn tray() -> gtk::Overlay {
     let container = gtk::Box::new(gtk::Orientation::Horizontal, 0);
     container.add_css_class("tray");
+    let background = hexagon(&container, "tray-background");
 
     let buttons: RefCell<HashMap<String, TrayButton>> = RefCell::default();
     let weak = container.downgrade();
@@ -258,6 +261,7 @@ pub fn tray() -> gtk::Box {
             .iter()
             .filter(|i| i.item.menu.is_some() && i.menu.is_some())
             .collect();
+        container.set_visible(!shown.is_empty());
 
         buttons.retain(|address, button| {
             let keep = shown.iter().any(|i| &i.address == address);
@@ -281,5 +285,5 @@ pub fn tray() -> gtk::Box {
         true
     });
 
-    container
+    background
 }

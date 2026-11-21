@@ -8,6 +8,7 @@ use regex::Regex;
 
 use crate::services::hyprland::{self, Client, State, Workspace};
 use crate::steam_icon::try_grab_steam_icon;
+use crate::widgets::hexagon::{TIP, set_source};
 
 #[derive(Clone)]
 enum Icon {
@@ -134,8 +135,6 @@ fn workspace_button(workspace: &Workspace, state: &State) -> gtk::Button {
     button
 }
 
-/// Horizontal size of a chevron tip.
-const TIP: f64 = 14.0;
 const LINE_WIDTH: f64 = 1.0;
 /// Space between a button's edge and its content: just enough to clear the
 /// chevron tip reaching into the button (half a tip plus half the line),
@@ -180,16 +179,6 @@ fn chevrons(area: &gtk::DrawingArea, row: &gtk::Box, center: Option<usize>) -> V
             ]
         })
         .collect()
-}
-
-fn set_source(cr: &gtk::cairo::Context, area: &gtk::DrawingArea) {
-    let color = area.color();
-    cr.set_source_rgba(
-        color.red().into(),
-        color.green().into(),
-        color.blue().into(),
-        color.alpha().into(),
-    );
 }
 
 /// A row of buttons outlined as interlocking hexagon halves; the `center`
