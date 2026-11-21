@@ -1,21 +1,6 @@
 @use "variables" as *;
 
-// The hexagon shapes are drawn in code (see `hex_row` in workspaces.rs);
-// the buttons themselves are invisible apart from their content.
-.workspace {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  // Horizontal spacing comes from `CONTENT_INSET` in workspaces.rs.
-  padding: 2px 0;
-  min-width: 0;
-
-  &:hover > * {
-    opacity: 0.7;
-  }
-}
-
+// The buttons are styled as `.hex-row-button` (see hexagon.scss).
 .workspace-active {
   color: $base-color;
 }

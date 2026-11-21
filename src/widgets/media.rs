@@ -5,6 +5,7 @@ use gtk::prelude::*;
 use gtk::{gdk, gio, glib, pango};
 
 use crate::services::mpris::{self, Action, Player, Status};
+use crate::widgets::hexagon::hex_row;
 
 const FALLBACK_ART: &str = "audio-x-generic-symbolic";
 const ART_SIZE: i32 = 24;
@@ -13,10 +14,7 @@ const ART_SIZE: i32 = 24;
 type Current = Rc<RefCell<Option<String>>>;
 
 fn control(icon: &str, action: Action, current: &Current) -> gtk::Button {
-    let button = gtk::Button::builder()
-        .icon_name(icon)
-        .css_classes(["btn-transparent"])
-        .build();
+    let button = gtk::Button::from_icon_name(icon);
     let current = current.clone();
     button.connect_clicked(move |_| {
         if let Some(name) = current.borrow().as_deref() {
@@ -87,6 +85,16 @@ pub fn media() -> gtk::Box {
     let previous = control("media-skip-backward-symbolic", Action::Previous, &current);
     let play_pause = control("media-playback-start-symbolic", Action::PlayPause, &current);
     let next = control("media-skip-forward-symbolic", Action::Next, &current);
+    play_pause.add_css_class("media-play-pause");
+    previous.add_css_class("media-skip");
+    next.add_css_class("media-skip");
+    // Play/pause is the full, filled hexagon; previous/next point away from it.
+    let controls = hex_row(
+        &[previous.clone(), play_pause.clone(), next.clone()],
+        Some(1),
+        true,
+        "media-controls",
+    );
 
     let root = gtk::Box::builder()
         .spacing(6)
@@ -95,9 +103,7 @@ pub fn media() -> gtk::Box {
         .build();
     root.append(&art);
     root.append(&label);
-    root.append(&previous);
-    root.append(&play_pause);
-    root.append(&next);
+    root.append(&controls);
 
     let weak = root.downgrade();
     mpris::get().state.subscribe(move |state| {

@@ -1,0 +1,21 @@
+@use "variables" as *;
+
+// Previous / play-pause / next hexagons.
+.media-controls-fill {
+  color: $selbg-color;
+}
+
+.media-controls-outline {
+  color: $selbg-color;
+}
+
+// Extra room around the previous/next icons.
+.hex-row-button.media-skip {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+// Icon on the filled play/pause hexagon.
+.media-play-pause {
+  color: $base-color;
+}
