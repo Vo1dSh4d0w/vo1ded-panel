@@ -1,3 +1,4 @@
+pub mod card;
 pub mod hexagon;
 pub mod media;
 pub mod notification_center;

@@ -76,9 +76,10 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
 /// button.
 pub const DEFAULT_ACTION: &str = "default";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Urgency {
     Low,
+    #[default]
     Normal,
     Critical,
 }
@@ -102,7 +103,7 @@ pub enum Image {
 impl Image {
     /// Parses an `image-path` hint or `app_icon`: a `file://` URI, an
     /// absolute path, or an icon name.
-    fn from_path(path: &str) -> Option<Self> {
+    pub(crate) fn from_path(path: &str) -> Option<Self> {
         if path.is_empty() {
             None
         } else if let Some(file) = path.strip_prefix("file://") {
@@ -405,7 +406,12 @@ impl Notifications {
     /// (Re)starts the expiry timer of notification `id`.
     fn start_timer(self: &Rc<Self>, id: u32) {
         self.stop_timer(id);
-        let timeout = self.state.get().iter().find(|n| n.id == id).and_then(|n| n.timeout);
+        let timeout = self
+            .state
+            .get()
+            .iter()
+            .find(|n| n.id == id)
+            .and_then(|n| n.timeout);
         let Some(timeout) = timeout else { return };
         let weak = Rc::downgrade(self);
         let source = glib::timeout_add_local_once(timeout, move || {
@@ -428,7 +434,12 @@ impl Notifications {
     /// closed; others stay in the notification centre, and since they can
     /// still be acted on there, the client isn't told they closed.
     fn expire(&self, id: u32) {
-        let Some(transient) = self.state.get().iter().find(|n| n.id == id).map(|n| n.transient)
+        let Some(transient) = self
+            .state
+            .get()
+            .iter()
+            .find(|n| n.id == id)
+            .map(|n| n.transient)
         else {
             return;
         };
@@ -445,7 +456,13 @@ impl Notifications {
 
     /// Ends all popups at once, e.g. when the notification centre is opened.
     pub fn expire_all(&self) {
-        let ids: Vec<u32> = self.state.get().iter().filter(|n| n.popup).map(|n| n.id).collect();
+        let ids: Vec<u32> = self
+            .state
+            .get()
+            .iter()
+            .filter(|n| n.popup)
+            .map(|n| n.id)
+            .collect();
         for id in ids {
             self.stop_timer(id);
             self.expire(id);
@@ -481,7 +498,12 @@ impl Notifications {
     /// Invokes action `key` of notification `id`, closing it unless it is
     /// resident.
     pub fn invoke(&self, id: u32, key: &str) {
-        let Some(resident) = self.state.get().iter().find(|n| n.id == id).map(|n| n.resident)
+        let Some(resident) = self
+            .state
+            .get()
+            .iter()
+            .find(|n| n.id == id)
+            .map(|n| n.resident)
         else {
             return;
         };
@@ -535,7 +557,9 @@ pub fn body_markup(body: &str) -> String {
     // check the markup with them as plain spans. `sanitize` writes them
     // exactly as `<a href="…">`, with the URL escaped.
     let links = regex::Regex::new(r#"<a href="[^"]*">"#).expect("valid regex");
-    let without_links = links.replace_all(&markup, "<span>").replace("</a>", "</span>");
+    let without_links = links
+        .replace_all(&markup, "<span>")
+        .replace("</a>", "</span>");
     if gtk::pango::parse_markup(&without_links, '\0').is_ok() {
         markup
     } else {
@@ -705,7 +729,10 @@ mod tests {
 
     #[test]
     fn keeps_entities() {
-        assert_eq!(sanitize("&amp; &#38; &#x26; &nbsp;"), "&amp; &#38; &#x26; &amp;nbsp;");
+        assert_eq!(
+            sanitize("&amp; &#38; &#x26; &nbsp;"),
+            "&amp; &#38; &#x26; &amp;nbsp;"
+        );
     }
 
     #[test]
@@ -720,7 +747,10 @@ mod tests {
             sanitize(r#"<a href="https://x.y/?a=1&amp;b=2">link</a>"#),
             r#"<a href="https://x.y/?a=1&amp;b=2">link</a>"#
         );
-        assert_eq!(sanitize(r#"<img src="x.png" alt="pic & text"/>"#), "pic &amp; text");
+        assert_eq!(
+            sanitize(r#"<img src="x.png" alt="pic & text"/>"#),
+            "pic &amp; text"
+        );
         assert_eq!(sanitize("line<br/>next"), "line\nnext");
     }
 
@@ -728,7 +758,10 @@ mod tests {
     fn result_is_valid_pango_markup() {
         for body in ["<b>x", "</b>y", "<a>no href</a>", "&#0; <i></b>", "a<b"] {
             let markup = body_markup(body);
-            assert!(gtk::pango::parse_markup(&markup, '\0').is_ok(), "{body:?} -> {markup:?}");
+            assert!(
+                gtk::pango::parse_markup(&markup, '\0').is_ok(),
+                "{body:?} -> {markup:?}"
+            );
         }
     }
 
