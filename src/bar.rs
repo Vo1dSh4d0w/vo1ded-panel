@@ -39,6 +39,7 @@ pub fn bar(app: &gtk::Application, monitor: &gdk::Monitor) -> gtk::ApplicationWi
     end.append(&widgets::tray::tray());
     end.append(&widgets::wireplumber::wireplumber());
     end.append(&widgets::time::time());
+    end.append(&widgets::notification_center::notification_center());
     // Runs off the right screen edge, so only the left side is slanted.
     let end = region(&end, true, false);
     end.set_hexpand(true);

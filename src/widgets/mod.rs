@@ -1,5 +1,6 @@
 pub mod hexagon;
 pub mod media;
+pub mod notification_center;
 pub mod notifications;
 pub mod time;
 pub mod tray;

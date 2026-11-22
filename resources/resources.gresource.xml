@@ -12,5 +12,7 @@
     <file>icons/scalable/status/vo1ded-microphone-sensitivity-medium-symbolic.svg</file>
     <file>icons/scalable/status/vo1ded-microphone-sensitivity-muted-symbolic.svg</file>
     <file>icons/scalable/status/vo1ded-window-close-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-bell-symbolic.svg</file>
+    <file>icons/scalable/status/vo1ded-bell-outline-symbolic.svg</file>
   </gresource>
 </gresources>

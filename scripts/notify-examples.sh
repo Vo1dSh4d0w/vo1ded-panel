@@ -152,13 +152,18 @@ example_close() {
   echo "$id"
 }
 
+example_transient() {
+  notify "Examples" 0 "dialog-information" "transient hint" \
+    "Gone for good once the popup expires; never in the notification centre." "[]" "{'transient': <true>}" -1
+}
+
 example_timeout() {
   notify "Examples" 0 "alarm" "expire_timeout" \
     "Expires after 10 seconds (hover to pause)." "[]" "{}" 10000
 }
 
 EXAMPLES=(basic markup long low critical image_data image_path actions
-  action_icons resident position replace close timeout)
+  action_icons resident position replace close transient timeout)
 
 case "${1:-}" in
   --list | -l)

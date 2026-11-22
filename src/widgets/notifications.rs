@@ -148,7 +148,7 @@ fn image_hexagon(image: &Image) -> Option<gtk::Widget> {
 ///   \\___/  body                   /
 ///    ‾‾‾‾‾‾‾ <action> <action> ‾‾‾‾
 /// ```
-fn notification_widget(notification: &Notification) -> gtk::Widget {
+pub fn notification_widget(notification: &Notification) -> gtk::Widget {
     let id = notification.id;
     let service = notifications::get();
 
@@ -411,6 +411,8 @@ pub fn init(app: &gtk::Application) {
     let app = app.clone();
     let render = move |list: &Vec<Notification>| {
         let mut popups = popups.borrow_mut();
+        // Expired popups live on only in the notification centre.
+        let list: Vec<&Notification> = list.iter().filter(|n| n.popup).collect();
         popups.retain(|id, _| list.iter().any(|n| n.id == *id));
 
         // Notifications are only placed on a monitor when shown, so the
@@ -420,7 +422,7 @@ pub fn init(app: &gtk::Application) {
         }
 
         let mut previous: Option<gtk::Widget> = None;
-        for notification in list {
+        for &notification in &list {
             let popup = popups.get(&notification.id);
             if popup.is_none_or(|p| p.notification != *notification) {
                 let widget = notification_widget(notification);

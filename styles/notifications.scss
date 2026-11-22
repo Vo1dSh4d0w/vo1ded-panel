@@ -69,3 +69,38 @@ window.notifications {
     color: #{"mix(@theme_bg_color, @error_color, 0.12)"};
   }
 }
+
+// Notification centre (see widgets/notification_center.rs): a bell button on
+// a hexagon at the right edge of the bar, like the mixer button.
+.notification-center-background {
+  color: $base-color;
+}
+
+.notification-center-button > button {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+
+  &:hover > *,
+  &:checked > * {
+    opacity: 0.7;
+  }
+
+  &:checked {
+    color: $selbg-color;
+  }
+}
+
+.notification-center-count {
+  font-feature-settings: "tnum";
+}
+
+.notification-center-title {
+  font-weight: bold;
+}
+
+.notification-center-empty {
+  opacity: 0.6;
+}

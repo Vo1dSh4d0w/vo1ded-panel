@@ -65,6 +65,7 @@ const CAPABILITIES: &[&str] = &[
     "body-hyperlinks",
     "body-markup",
     "icon-static",
+    "persistence",
 ];
 
 /// Timeout for notifications that leave it to the server (`expire_timeout`
@@ -161,6 +162,11 @@ pub struct Notification {
     pub urgency: Urgency,
     /// Kept around after an action is invoked.
     pub resident: bool,
+    /// Not kept in the notification centre once its popup expires.
+    pub transient: bool,
+    /// Shown as a popup; cleared when the popup expires, leaving the
+    /// notification in the notification centre.
+    pub popup: bool,
     /// Screen position the notification should point to.
     pub position: Option<(i32, i32)>,
     /// `None` if the notification never expires.
@@ -379,6 +385,8 @@ impl Notifications {
             image,
             urgency,
             resident: bool_hint("resident"),
+            transient: bool_hint("transient"),
+            popup: true,
             position,
             timeout,
         };
@@ -404,7 +412,7 @@ impl Notifications {
             if let Some(this) = weak.upgrade() {
                 // The source is finished; don't remove it again.
                 this.timers.borrow_mut().remove(&id);
-                this.close(id, Reason::Expired);
+                this.expire(id);
             }
         });
         self.timers.borrow_mut().insert(id, source);
@@ -416,15 +424,52 @@ impl Notifications {
         }
     }
 
+    /// Ends the popup of notification `id`. Transient notifications are
+    /// closed; others stay in the notification centre, and since they can
+    /// still be acted on there, the client isn't told they closed.
+    fn expire(&self, id: u32) {
+        let Some(transient) = self.state.get().iter().find(|n| n.id == id).map(|n| n.transient)
+        else {
+            return;
+        };
+        if transient {
+            self.close(id, Reason::Expired);
+        } else {
+            self.state.update(|list| {
+                if let Some(n) = list.iter_mut().find(|n| n.id == id) {
+                    n.popup = false;
+                }
+            });
+        }
+    }
+
+    /// Ends all popups at once, e.g. when the notification centre is opened.
+    pub fn expire_all(&self) {
+        let ids: Vec<u32> = self.state.get().iter().filter(|n| n.popup).map(|n| n.id).collect();
+        for id in ids {
+            self.stop_timer(id);
+            self.expire(id);
+        }
+    }
+
     /// Keeps notification `id` from expiring, e.g. while it is hovered.
     pub fn hold(&self, id: u32) {
         self.stop_timer(id);
     }
 
-    /// Undoes [`Self::hold`], restarting the full timeout.
+    /// Undoes [`Self::hold`], restarting the full timeout. Does nothing for
+    /// notifications that are no longer popups.
     pub fn release(self: &Rc<Self>, id: u32) {
-        if self.state.get().iter().any(|n| n.id == id) {
+        if self.state.get().iter().any(|n| n.id == id && n.popup) {
             self.start_timer(id);
+        }
+    }
+
+    /// Dismisses every notification, e.g. from the notification centre.
+    pub fn dismiss_all(&self) {
+        let ids: Vec<u32> = self.state.get().iter().map(|n| n.id).collect();
+        for id in ids {
+            self.dismiss(id);
         }
     }
 
